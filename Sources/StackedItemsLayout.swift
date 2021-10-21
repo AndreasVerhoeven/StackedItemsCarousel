@@ -81,7 +81,7 @@ public class StackedItemsLayout: UICollectionViewLayout {
 	private let perItemRotationRadians = CGFloat(2 * CGFloat.pi / 180)
 	private let perItemScale = CGFloat(0.9)
 	private let horizontalOffsets: [CGFloat] = [20, 14.5, 10, 9, 5]
-	private lazy var totalEffectiveHorizontalOffset = horizontalOffsets.reduce(CGFloat(0), +) * pow(perItemScale, CGFloat(horizontalOffsets.count - 1)) - horizontalOffsets.last!
+	private lazy var totalEffectiveHorizontalOffset = ceil(horizontalOffsets.reduce(CGFloat(0), +) * pow(perItemScale, CGFloat(horizontalOffsets.count - 1)) - horizontalOffsets.last!)
 
 	/// Returns the horizontal offset for progress ("offset") for an item
 	private func horizontalOffsetForProgress(_ offset: CGFloat) -> CGFloat {
