@@ -2,13 +2,17 @@
 A carousel of stacked items (such as photos) as seen in iMessage
 
 
-
 ## What?
 
 iMessage on iOS 15 shows multiple photos in a carousel of stacked items that the user can swipe thru. This is a reimplementation of that view.
 
-## How to use?
 
+
+https://user-images.githubusercontent.com/168214/138356900-df2b2822-6724-4f09-be69-a216aa972f39.mp4
+
+
+
+## How to use?
 
 ### StackedItemsLayout
 
