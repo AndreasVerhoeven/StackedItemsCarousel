@@ -83,7 +83,9 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
 		cell.contentView.clipsToBounds = true
 		cell.contentView.layer.cornerRadius = cornerRadius
-		cell.contentView.layer.cornerCurve = .continuous
+		if #available(iOS 13, *) {
+			cell.contentView.layer.cornerCurve = .continuous
+		}
 
 		cell.layer.shadowRadius = 4
 		cell.layer.shadowOpacity = 0.15
