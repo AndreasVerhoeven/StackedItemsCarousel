@@ -106,6 +106,8 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 		collectionView.alwaysBounceHorizontal = true
 		collectionView.clipsToBounds = false
 		collectionView.isPagingEnabled = true
+		collectionView.showsVerticalScrollIndicator = false
+		collectionView.showsHorizontalScrollIndicator = false
 		collectionView.dataSource = self
 		collectionView.delegate = self
 		collectionView.register(CellType.self, forCellWithReuseIdentifier: "Cell")
