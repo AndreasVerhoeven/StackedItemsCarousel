@@ -89,6 +89,10 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 		let xOffset = collectionView.bounds.width * CGFloat(index)
 		let contentOffset = CGPoint(x: -collectionView.adjustedContentInset.left + xOffset, y: -collectionView.adjustedContentInset.top)
 		collectionView.setContentOffset(contentOffset, animated: animated)
+		if animated == false {
+			collectionView.setNeedsLayout()
+			collectionView.layoutIfNeeded()
+		}
 	}
 
 	/// returns the cell at the given index, if visible
