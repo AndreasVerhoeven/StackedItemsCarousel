@@ -173,7 +173,8 @@ public class StackedItemsLayout: UICollectionViewLayout {
 
 		let offset = collectionView.contentOffset.x
 		let index = max(0, min(numberOfItems - 1, Int(offset / pageWidth)))
-
+		let roundedIndex = max(0, min(numberOfItems - 1, Int(round(offset / pageWidth))))
+		
 		let canGoForward = currentlyFocusedItemIndex < numberOfItems - 1
 		let canGoBackwards = currentlyFocusedItemIndex > 0
 
@@ -184,7 +185,7 @@ public class StackedItemsLayout: UICollectionViewLayout {
 		if canGoForward && index > currentlyFocusedItemIndex  {
 			currentlyFocusedItemIndex = index
 		} else if canGoBackwards && offset <= contentOffsetForIndex(currentlyFocusedItemIndex - 1) {
-			currentlyFocusedItemIndex = index
+			currentlyFocusedItemIndex = roundedIndex
 		}
 
 		let progressFromFocusedItem = (offset - contentOffsetForIndex(currentlyFocusedItemIndex)) / pageWidth
