@@ -164,10 +164,12 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
 	// MARK: - UICollectionViewDragDelegate
 	public func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+		guard indexPath.row == currentlyFocusedItemIndex else { return [] }
 		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
 	}
 
 	public func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
+		guard indexPath.row == currentlyFocusedItemIndex else { return [] }
 		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
 	}
 

@@ -10,6 +10,7 @@ import UIKit
 /// A UICollectionViewLayout that shows a stack of items
 /// that the user can swipe thru. The swipe animations
 /// are completely driven by scrolling the collection view.
+/// Only the items in the first section are used.
 public class StackedItemsLayout: UICollectionViewLayout {
 	/// The size of each item
 	public var itemSize = CGSize(width: 200, height: 260) {
@@ -81,7 +82,12 @@ public class StackedItemsLayout: UICollectionViewLayout {
 	private let perItemRotationRadians = CGFloat(2 * CGFloat.pi / 180)
 	private let perItemScale = CGFloat(0.9)
 	private let horizontalOffsets: [CGFloat] = [20, 14.5, 10, 9, 5]
-	private lazy var totalEffectiveHorizontalOffset = ceil(horizontalOffsets.reduce(CGFloat(0), +) * pow(perItemScale, CGFloat(horizontalOffsets.count - 1)) - horizontalOffsets.last!)
+
+	// the offset to use
+	private var totalEffectiveHorizontalOffset: CGFloat {
+		let numberOfItems = min(max(0, numberOfItems - 1), horizontalOffsets.count - 1)
+		return ceil(horizontalOffsets.prefix(numberOfItems).reduce(CGFloat(0), +) * pow(perItemScale, CGFloat(horizontalOffsets.count - 1)))
+	}
 
 	/// Returns the horizontal offset for progress ("offset") for an item
 	private func horizontalOffsetForProgress(_ offset: CGFloat) -> CGFloat {
@@ -140,13 +146,19 @@ public class StackedItemsLayout: UICollectionViewLayout {
 		}
 	}
 
+	/// the number of items in the collection view's first secion
+	private var numberOfItems: Int {
+		guard let collectionView = collectionView else { return 0 }
+		guard collectionView.numberOfSections > 0 else { return 0 }
+		return collectionView.numberOfItems(inSection: 0)
+	}
 
 	// MARK: - UICollectionView
 	public override func prepare() {
 		super.prepare()
 
 		guard let collectionView = collectionView else { return }
-		let numberOfItems = collectionView.dataSource?.collectionView(collectionView, numberOfItemsInSection: 0) ?? 0
+		let numberOfItems = self.numberOfItems
 		let size = collectionView.bounds.size
 		let pageWidth = size.width
 
