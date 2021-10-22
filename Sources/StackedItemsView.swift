@@ -23,7 +23,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
 	/// this will be called when an item is dragged
 	public var dragItemsProvider: DragItemsProvider?
-	public typealias DragItemsProvider = (ItemType, Int) -> [UIDragItem]
+	public typealias DragItemsProvider = (ItemType, Int, UIDragSession) -> [UIDragItem]
 
 	/// this will be called when the context menu is needed for an item
 	public var contextMenuConfigurationProvider: ContextMenuConfigurationProvider?
@@ -160,11 +160,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
 	// MARK: - UICollectionViewDragDelegate
 	public func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-		return dragItemsProvider?(items[indexPath.row], indexPath.row) ?? []
+		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
 	}
 
 	public func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-		return dragItemsProvider?(items[indexPath.row], indexPath.row) ?? []
+		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
 	}
 
 	public func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {

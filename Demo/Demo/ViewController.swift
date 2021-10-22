@@ -50,7 +50,7 @@ class ViewController: UIViewController {
 		}
 
 		// provide drag items
-		stackedItemsView.dragItemsProvider = { item, index in
+		stackedItemsView.dragItemsProvider = { item, index, session in
 			return [UIDragItem(itemProvider: NSItemProvider(object: item))]
 		}
 
