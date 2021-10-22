@@ -256,6 +256,10 @@ public class StackedItemsLayout: UICollectionViewLayout {
 				// we animate in the alpha of the final item of the stack, so that it appears nicely
 				if relativeIndex == horizontalOffsets.count {
 					item.alpha = abs(progressFromFocusedItem)
+				} else if isPartOfLeadingStack == true && progressFromFocusedItem > 0 && relativeIndex == horizontalOffsets.count - 1 {
+					item.alpha = 1 - abs(progressFromFocusedItem)
+				} else if isPartOfLeadingStack == false && progressFromFocusedItem < 0 && relativeIndex == horizontalOffsets.count - 1 {
+					item.alpha = 1 + progressFromFocusedItem
 				} else {
 					item.alpha = 1
 				}
