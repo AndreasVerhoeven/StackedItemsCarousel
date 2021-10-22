@@ -42,7 +42,7 @@ stackedItemsView.configureItemHandler = { item, cell in
 	// configure your cell here - it already has some shadow and corner radius parameters set on
 	// the cell itself.
 }
-stackedItemsView.selectionHandler = { [weak self] item in
+stackedItemsView.selectionHandler = { [weak self] item, index in
 	// handle item selection here
 }
 view.addSubview(stackedItemsView)

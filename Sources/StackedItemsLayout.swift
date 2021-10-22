@@ -267,6 +267,7 @@ public class StackedItemsLayout: UICollectionViewLayout {
 			} else {
 				// items not on the stack are hidden
 				item.isHidden = true
+				item.frame = .zero
 			}
 			return item
 		}
