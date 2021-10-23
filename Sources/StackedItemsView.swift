@@ -186,7 +186,8 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 			// the fake view doesn't animate correctly, so it looks weird.
 			// By removing the fake view, that interaction ends immediately.
 			for subview in scrollView.subviews {
-				guard NSStringFromClass(subview.classForCoder).hasPrefix("_") else { continue }
+				guard subview is UICollectionViewCell == false else { continue }
+				guard NSStringFromClass(subview.classForCoder).hasPrefix("_UI") else { continue }
 				subview.removeFromSuperview()
 			}
 		}
