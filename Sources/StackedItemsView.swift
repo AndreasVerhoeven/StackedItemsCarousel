@@ -8,7 +8,7 @@
 import UIKit
 
 /// A view that provides a stacked of scrollable items by wrapping a UICollectionView with a `StackedItemsLayout`
-public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCell>: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDragDelegate {
+public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCell>: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIContextMenuInteractionDelegate, UIDragInteractionDelegate {
 
 	public let collectionView = UICollectionView(frame: .zero, collectionViewLayout: StackedItemsLayout())
 	private var lastIndexOfContextMenu: Int?
@@ -138,47 +138,59 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 		}
 	}
 
-	public func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-		guard indexPath.row == currentlyFocusedItemIndex else { return nil }
-		lastIndexOfContextMenu = indexPath.row
-		return contextMenuConfigurationProvider?(items[indexPath.row], indexPath.row)
+	// MARK: - UIContextMenuInteractionDelegate
+	public func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+		guard collectionView.indexPathForItem(at: collectionView.convert(location, from: self))?.row == currentlyFocusedItemIndex else { return nil }
+
+		lastIndexOfContextMenu = currentlyFocusedItemIndex
+		return contextMenuConfigurationProvider?(items[currentlyFocusedItemIndex], currentlyFocusedItemIndex)
 	}
 
-	public func collectionView(_ collectionView: UICollectionView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-		guard let index = lastIndexOfContextMenu, let cell = cell(at: index) else { return nil }
-		let parameters = UIDragPreviewParameters()
-		parameters.visiblePath = UIBezierPath(roundedRect: CGRect(origin: .zero, size: itemSize), cornerRadius: cornerRadius)
-		return UITargetedPreview(view: cell, parameters: parameters)
+	public func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+		return targetedDragPreviewForCurrentCell
 	}
 
 	public func collectionView(_ collectionView: UICollectionView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
-		guard let index = lastIndexOfContextMenu, let cell = cell(at: index) else { return nil }
-		let parameters = UIDragPreviewParameters()
-		parameters.visiblePath = UIBezierPath(roundedRect: CGRect(origin: .zero, size: itemSize), cornerRadius: cornerRadius)
-		return UITargetedPreview(view: cell, parameters: parameters)
+		return targetedDragPreviewForCurrentCell
 	}
 
-	public func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+	public func contextMenuInteraction(_ interaction: UIContextMenuInteraction, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
 		commitContextMenuPreviewHandler?(configuration, animator)
 	}
 
-	// MARK: - UICollectionViewDragDelegate
-	public func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-		guard indexPath.row == currentlyFocusedItemIndex else { return [] }
-		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
+	// MARK: - UIDragInteractionDelegate
+	public func dragInteraction(_ interaction: UIDragInteraction, itemsForBeginning session: UIDragSession) -> [UIDragItem] {
+		guard collectionView.indexPathForItem(at: session.location(in: collectionView))?.row == currentlyFocusedItemIndex else { return [] }
+		return dragItemsProvider?(items[currentlyFocusedItemIndex], currentlyFocusedItemIndex, session) ?? []
 	}
 
-	public func collectionView(_ collectionView: UICollectionView, itemsForAddingTo session: UIDragSession, at indexPath: IndexPath, point: CGPoint) -> [UIDragItem] {
-		guard indexPath.row == currentlyFocusedItemIndex else { return [] }
-		return dragItemsProvider?(items[indexPath.row], indexPath.row, session) ?? []
+	public func dragInteraction(_ interaction: UIDragInteraction, itemsForAddingTo session: UIDragSession, withTouchAt point: CGPoint) -> [UIDragItem] {
+		guard collectionView.indexPathForItem(at: session.location(in: collectionView))?.row == currentlyFocusedItemIndex else { return [] }
+		return dragItemsProvider?(items[currentlyFocusedItemIndex], currentlyFocusedItemIndex, session) ?? []
 	}
 
-	public func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
-		let parameters = UIDragPreviewParameters()
-		parameters.visiblePath = UIBezierPath(roundedRect: CGRect(origin: .zero, size: itemSize), cornerRadius: cornerRadius)
-		return parameters
+	public func dragInteraction(_ interaction: UIDragInteraction, previewForLifting item: UIDragItem, session: UIDragSession) -> UITargetedDragPreview? {
+		return targetedDragPreviewForCurrentCell
 	}
 
+	public func dragInteraction(_ interaction: UIDragInteraction, previewForCancelling item: UIDragItem, withDefault defaultPreview: UITargetedDragPreview) -> UITargetedDragPreview? {
+		return targetedDragPreviewForCurrentCell
+	}
+
+	// MARK: - UIScrollViewDelegate
+
+	public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+		if scrollView.isTracking == true {
+			// WORKAROUND(iOS 13, *) This is a workaround for UIContextMenuInteraction
+			// replacing our cell with a fake view when we pan a little bit:
+			// the fake view doesn't animate correctly, so it looks weird.
+			// By removing the fake view, that interaction ends immediately.
+			for subview in scrollView.subviews {
+				guard NSStringFromClass(subview.classForCoder).hasPrefix("_") else { continue }
+				subview.removeFromSuperview()
+			}
+		}
+	}
 
 	// MARK: - Private
 	private func setup() {
@@ -190,13 +202,22 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 		collectionView.showsHorizontalScrollIndicator = false
 		collectionView.dataSource = self
 		collectionView.delegate = self
-		collectionView.dragDelegate = self
 		collectionView.register(CellType.self, forCellWithReuseIdentifier: "Cell")
 		addSubview(collectionView)
+
+		addInteraction(UIContextMenuInteraction(delegate: self))
+		addInteraction(UIDragInteraction(delegate: self))
 	}
 
 	private var stackedItemsLayout: StackedItemsLayout! {
 		return collectionView.collectionViewLayout as? StackedItemsLayout
+	}
+
+	private var targetedDragPreviewForCurrentCell: UITargetedDragPreview? {
+		guard let cell = cell(at: currentlyFocusedItemIndex) else { return nil }
+		let parameters = UIDragPreviewParameters()
+		parameters.visiblePath = UIBezierPath(roundedRect: CGRect(origin: .zero, size: itemSize), cornerRadius: cornerRadius)
+		return UITargetedDragPreview(view: cell, parameters: parameters)
 	}
 
 	// MARK: - UIView

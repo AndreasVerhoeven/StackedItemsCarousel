@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 class ViewController: UIViewController {
 	let stackedItemsView = StackedItemsView<UIColor, UICollectionViewCell>()
 
@@ -55,6 +56,7 @@ class ViewController: UIViewController {
 		}
 
 		view.addSubview(stackedItemsView)
+		view.addGestureRecognizer(stackedItemsView.panGestureRecognizer)
 	}
 
 	override func viewDidLayoutSubviews() {
