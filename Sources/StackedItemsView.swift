@@ -165,7 +165,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 	}
 
 	public func dragInteraction(_ interaction: UIDragInteraction, itemsForAddingTo session: UIDragSession, withTouchAt point: CGPoint) -> [UIDragItem] {
-		guard collectionView.indexPathForItem(at: point)?.row == currentlyFocusedItemIndex else { return [] }
+		guard collectionView.indexPathForItem(at: collectionView.convert(location, from: self))?.row == currentlyFocusedItemIndex else { return [] }
 		return dragItemsProvider?(items[currentlyFocusedItemIndex], currentlyFocusedItemIndex, session) ?? []
 	}
 
