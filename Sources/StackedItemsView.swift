@@ -165,7 +165,7 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 	}
 
 	public func dragInteraction(_ interaction: UIDragInteraction, itemsForAddingTo session: UIDragSession, withTouchAt point: CGPoint) -> [UIDragItem] {
-		guard collectionView.indexPathForItem(at: session.location(in: collectionView))?.row == currentlyFocusedItemIndex else { return [] }
+		guard collectionView.indexPathForItem(at: point)?.row == currentlyFocusedItemIndex else { return [] }
 		return dragItemsProvider?(items[currentlyFocusedItemIndex], currentlyFocusedItemIndex, session) ?? []
 	}
 
@@ -175,6 +175,12 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 
 	public func dragInteraction(_ interaction: UIDragInteraction, previewForCancelling item: UIDragItem, withDefault defaultPreview: UITargetedDragPreview) -> UITargetedDragPreview? {
 		return targetedDragPreviewForCurrentCell
+	}
+
+	public func dragInteraction(_ interaction: UIDragInteraction, item: UIDragItem, willAnimateCancelWith animator: UIDragAnimating) {
+		animator.addCompletion { _ in
+			self.stackedItemsLayout.invalidateLayout()
+		}
 	}
 
 	// MARK: - UIScrollViewDelegate
