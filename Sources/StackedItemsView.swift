@@ -138,6 +138,11 @@ public class StackedItemsView<ItemType: Equatable, CellType: UICollectionViewCel
 		}
 	}
 
+	public func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+		guard let index = context.nextFocusedIndexPath?.row else { return }
+		scrollToItem(at: index, animated: true)
+	}
+
 	// MARK: - UIContextMenuInteractionDelegate
 	public func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
 		guard collectionView.indexPathForItem(at: collectionView.convert(location, from: self))?.row == currentlyFocusedItemIndex else { return nil }
